@@ -49,4 +49,359 @@
             height: 140px;
             border-radius: 50%;
             transform: translate(-50%, -50%);
-            border: 2px solid rgba(255, 215, 0, 0); /* 기본 투
+            border: 2px solid rgba(255, 215, 0, 0); /* 기본 투명 */
+            transition: all 0.3s ease;
+            z-index: -1;
+        }
+
+        #sword-image {
+            font-size: 80px;
+            display: block;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+            transition: transform 0.2s ease, filter 0.2s ease;
+        }
+
+        /* 강화 단계 텍스트 스타일 */
+        #sword-name {
+            font-size: 26px;
+            font-weight: bold;
+            color: #ffd700;
+            margin-bottom: 5px;
+            transition: text-shadow 0.2s;
+        }
+
+        /* 골드 업데이트 애니메이션 (블러 처리 후 변경) */
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 16px;
+            padding: 0 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 10px;
+        }
+
+        #gold-text { color: #b0b0b0; }
+        
+        #gold-value {
+            color: #ffd700;
+            font-weight: bold;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .gold-update-blur {
+            animation: goldBlur 0.4s ease forwards;
+        }
+
+        @keyframes goldBlur {
+            0% { opacity: 1; filter: blur(0); }
+            50% { opacity: 0.5; filter: blur(2px); color: #f44336; }
+            100% { opacity: 1; filter: blur(0); }
+        }
+
+        /* 버튼 및 설명 */
+        #sword-desc {
+            font-size: 14px;
+            color: #b0b0b0;
+            margin-bottom: 25px;
+            min-height: 40px;
+            line-height: 1.5;
+        }
+
+        .btn {
+            background-color: transparent;
+            color: #4CAF50;
+            border: 2px solid #4CAF50;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 12px;
+            transition: all 0.2s, color 0.2s;
+            font-weight: bold;
+        }
+
+        .btn:hover:not(:disabled) { background-color: rgba(76, 175, 80, 0.1); }
+        .btn:active:not(:disabled) { transform: scale(0.98); }
+        
+        .btn:disabled { 
+            border-color: #444; 
+            color: #444; 
+            cursor: not-allowed; 
+        }
+
+        .btn-work { color: #2196F3; border-color: #2196F3; }
+        .btn-work:hover { background-color: rgba(33, 150, 243, 0.1); }
+
+        /* 강화 로그 스타일 - 애니메이션 추가 */
+        #log-container {
+            margin-top: 20px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            height: 30px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            position: relative;
+        }
+
+        #log {
+            transition: all 0.2s;
+            opacity: 0;
+            position: absolute;
+        }
+
+        #log.show {
+            opacity: 1;
+            position: relative;
+        }
+
+        .log-success-flash { animation: successFlash 1s ease; color: #4CAF50 !important; }
+        .log-fail-flash { animation: failFlash 1s ease; color: #f44336 !important; }
+
+        /* ---------- 핵심 애니메이션 Keyframes 및 클래스 ---------- */
+
+        /* 1. 강화 성공: 검 확대, 오라 생성, 입자 폭발 */
+        .effect-success #sword-image {
+            animation: swordSuccess 0.5s ease;
+            filter: drop-shadow(0 0 10px #ffd700);
+        }
+
+        .effect-success #sword-aura {
+            border: 4px solid #ffd700;
+            animation: auraSuccess 0.8s ease;
+        }
+
+        .effect-success #sword-name {
+            color: #4CAF50 !important;
+            text-shadow: 0 0 10px rgba(76, 175, 80, 0.8);
+        }
+
+        @keyframes swordSuccess {
+            0% { transform: scale(1); }
+            30% { transform: scale(1.3) rotate(5deg); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes auraSuccess {
+            0% { transform: translate(-50%, -50%) scale(0.8); opacity: 1; border-width: 8px;}
+            100% { transform: translate(-50%, -50%) scale(1.4); opacity: 0; border-width: 1px; }
+        }
+
+        /* 2. 강화 실패: 컨테이너 흔들림, 검 축소 */
+        .effect-fail #game-container {
+            animation: containerShake 0.4s ease;
+        }
+
+        .effect-fail #sword-image {
+            animation: swordFail 0.4s ease;
+            filter: drop-shadow(0 0 10px #f44336);
+        }
+
+        @keyframes containerShake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+            20%, 40%, 60%, 80% { transform: translateX(4px); }
+        }
+
+        @keyframes swordFail {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.8) rotate(-5deg); }
+            100% { transform: scale(1); }
+        }
+
+        /* 3. 로그 깜빡임 */
+        @keyframes successFlash {
+            0% { opacity: 0; text-shadow: 0 0 0 transparent; }
+            10% { opacity: 1; text-shadow: 0 0 10px rgba(76, 175, 80, 0.8); }
+            100% { opacity: 1; text-shadow: 0 0 0 transparent; }
+        }
+
+        @keyframes failFlash {
+            0% { opacity: 0; text-shadow: 0 0 0 transparent; }
+            10% { opacity: 1; text-shadow: 0 0 10px rgba(244, 67, 54, 0.8); }
+            100% { opacity: 1; text-shadow: 0 0 0 transparent; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <div id="sword-container">
+            <div id="sword-aura"></div>
+            <div id="sword-image">🗡️</div>
+        </div>
+        
+        <div id="sword-name">초보자의 검</div>
+        
+        <div class="stats">
+            <span id="gold-text">소지 골드</span>
+            <span id="gold-value">
+                <span id="gold">1,000</span> G
+            </span>
+        </div>
+
+        <div id="sword-desc">
+            강화를 시작해 보세요.<br>
+            <span id="rate-text"></span>
+        </div>
+
+        <button id="btn-enhance" class="btn">강화하기 (100 G)</button>
+        <button id="btn-work" class="btn btn-work">광산에서 일하기 (+500 G)</button>
+
+        <div id="log-container">
+            <div id="log" class="show">게임을 시작합니다.</div>
+        </div>
+    </div>
+
+    <script>
+        // --- 상태 관리 ---
+        let level = 0;
+        const MAX_LEVEL = 20;
+        let gold = 1000;
+        let isAnimating = false; // 애니메이션 중 버튼 클릭 방지
+
+        // --- DOM ---
+        const elGame = document.getElementById('game-container');
+        const elSwordContainer = document.getElementById('sword-container');
+        const elSwordImage = document.getElementById('sword-image');
+        const elSwordName = document.getElementById('sword-name');
+        const elSwordDesc = document.getElementById('sword-desc');
+        const elRateText = document.getElementById('rate-text');
+        const elGoldValue = document.getElementById('gold-value');
+        const elGold = document.getElementById('gold');
+        const elBtnEnhance = document.getElementById('btn-enhance');
+        const elBtnWork = document.getElementById('btn-work');
+        const elLog = document.getElementById('log');
+
+        // --- 로직 (수치 조정) ---
+        function getEnhanceCost(lvl) { return 100 + (lvl * 150); }
+        function getSuccessRate(lvl) {
+            if (lvl < 5) return 100;
+            if (lvl < 10) return 80;
+            if (lvl < 15) return 50;
+            if (lvl < 19) return 30;
+            return 10;
+        }
+        function getSwordVisual(lvl) {
+            if (lvl >= 15) return "⚔️"; 
+            if (lvl >= 10) return "🗡️✨"; 
+            return "🗡️"; 
+        }
+        function getSwordName(lvl) {
+            if (lvl === 0) return "초보자의 검";
+            return `+${lvl} 강화된 검`;
+        }
+
+        // --- UI 업데이트 ---
+        function updateUI() {
+            // 숫자 포맷팅 (이미지 스타일: 1000 -> 1,000)
+            elGold.innerText = gold.toLocaleString();
+            elSwordName.innerText = getSwordName(level);
+            elSwordImage.innerText = getSwordVisual(level);
+
+            if (level >= MAX_LEVEL) {
+                elSwordName.innerHTML = "+20 <span style='color:#ffd700'>MAX</span>";
+                elSwordDesc.innerText = "완벽한 검입니다.";
+                elRateText.innerText = "";
+                elBtnEnhance.innerText = "강화 마스터";
+                elBtnEnhance.disabled = true;
+            } else {
+                const cost = getEnhanceCost(level);
+                const rate = getSuccessRate(level);
+                elBtnEnhance.innerText = `강화하기 (${cost.toLocaleString()} G)`;
+                elRateText.innerHTML = `성공 확률: ${rate}% <span style="color:#f44336; font-size:12px;">(실패 시 하락)</span>`;
+                elBtnEnhance.disabled = gold < cost || isAnimating; 
+                elBtnWork.disabled = isAnimating;
+            }
+        }
+
+        // --- 애니메이션 처리 및 로그 출력 ---
+        function showLog(msg, type = 'normal') {
+            elLog.classList.remove('show', 'log-success-flash', 'log-fail-flash');
+            
+            // 짧은 시간차를 두어 애니메이션을 재트리거
+            requestAnimationFrame(() => {
+                elLog.innerText = msg;
+                elLog.classList.add('show');
+                if (type === 'success') elLog.classList.add('log-success-flash');
+                if (type === 'fail') elLog.classList.add('log-fail-flash');
+            });
+        }
+
+        // 골드 감소 애니메이션 (블러 처리)
+        function animateGoldChange() {
+            elGoldValue.classList.add('gold-update-blur');
+            setTimeout(() => elGoldValue.classList.remove('gold-update-blur'), 400);
+        }
+
+        // 강화 애니메이션 트리거
+        function triggerEffect(type) {
+            isAnimating = true;
+            updateUI(); // 버튼 비활성화
+
+            const effectClass = type === 'success' ? 'effect-success' : 'effect-fail';
+            document.body.classList.add(effectClass);
+
+            // 애니메이션 지속 시간 후 정리
+            setTimeout(() => {
+                document.body.classList.remove('effect-success', 'effect-fail');
+                isAnimating = false;
+                updateUI(); // 버튼 활성화
+            }, 800);
+        }
+
+        // --- 이벤트 ---
+
+        elBtnEnhance.addEventListener('click', () => {
+            if (level >= MAX_LEVEL || isAnimating) return;
+
+            const cost = getEnhanceCost(level);
+            if (gold < cost) {
+                showLog("골드가 부족합니다.", 'fail');
+                animateGoldChange();
+                return;
+            }
+
+            // 골드 감소 및 애니메이션
+            animateGoldChange();
+            gold -= cost;
+            updateUI();
+
+            // 확률 계산
+            const rate = getSuccessRate(level);
+            const randomValue = Math.floor(Math.random() * 100) + 1;
+
+            if (randomValue <= rate) {
+                // 성공
+                level++;
+                showLog(`성공! +${level} 강화되었습니다.`, 'success');
+                triggerEffect('success');
+            } else {
+                // 실패 패널티
+                if (level > 0) level--;
+                showLog(`실패... +${level}로 하락했습니다.`, 'fail');
+                triggerEffect('fail');
+            }
+        });
+
+        elBtnWork.addEventListener('click', () => {
+            if (isAnimating) return;
+            gold += 500;
+            animateGoldChange();
+            showLog("광산에서 500 G를 벌었습니다.", 'normal');
+            updateUI();
+        });
+
+        // 초기 화면
+        updateUI();
+    </script>
+</body>
+</html>
