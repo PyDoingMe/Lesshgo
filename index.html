@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>검 강화하기 프로토타입</title>
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #1e1e1e;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #game-container {
+            background-color: #2d2d2d;
+            padding: 30px;
+            border-radius: 15px;
+            width: 320px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        #sword-image {
+            font-size: 80px;
+            margin: 20px 0;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+        #sword-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffd700;
+            margin-bottom: 5px;
+        }
+        #sword-desc {
+            font-size: 14px;
+            color: #b0b0b0;
+            margin-bottom: 20px;
+            min-height: 40px;
+        }
+        .stats {
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 10px;
+            transition: background-color 0.2s;
+        }
+        .btn:hover { background-color: #45a049; }
+        .btn:disabled { background-color: #666; cursor: not-allowed; }
+        .btn-work { background-color: #2196F3; }
+        .btn-work:hover { background-color: #1e88e5; }
+        #log {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #111;
+            border-radius: 5px;
+            font-size: 13px;
+            color: #4caf50;
+            height: 20px;
+        }
+        .log-fail { color: #f44336 !important; }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <div id="sword-image">🗡️</div>
+        <div id="sword-name">초보자의 검</div>
+        <div id="sword-desc">강화를 시작해 보세요.</div>
+        
+        <div class="stats">
+            💰 소지 골드: <span id="gold">1000</span> G
+        </div>
+
+        <button id="btn-enhance" class="btn">강화하기 (100 G)</button>
+        <button id="btn-work" class="btn btn-work">광산에서 일하기 (+500 G)</button>
+
+        <div id="log">게임을 시작합니다.</div>
+    </div>
+
+    <script>
+        // 게임 상태 데이터
+        let level = 0;
+        const MAX_LEVEL = 20;
+        let gold = 1000;
+
+        // DOM 요소 가져오기
+        const elSwordImage = document.getElementById('sword-image');
+        const elSwordName = document.getElementById('sword-name');
+        const elSwordDesc = document.getElementById('sword-desc');
+        const elGold = document.getElementById('gold');
+        const elBtnEnhance = document.getElementById('btn-enhance');
+        const elBtnWork = document.getElementById('btn-work');
+        const elLog = document.getElementById('log');
+
+        // 단계별 설정 데이터 가져오기
+        function getEnhanceCost(lvl) {
+            return 100 + (lvl * 150); // 레벨이 오를수록 비용 증가
+        }
+
+        function getSuccessRate(lvl) {
+            if (lvl < 5) return 100;
+            if (lvl < 10) return 80;
+            if (lvl < 15) return 50;
+            if (lvl < 19) return 30;
+            return 10; // 19 -> 20단계는 10%
+        }
+
+        function getSwordVisual(lvl) {
+            if (lvl >= 15) return "⚔️"; // 전설
+            if (lvl >= 10) return "🗡️✨"; // 영웅
+            return "🗡️"; // 일반
+        }
+
+        function getSwordName(lvl) {
+            if (lvl === 0) return "초보자의 검";
+            if (lvl === 20) return "+20 신을 베는 검 (MAX)";
+            return `+${lvl} 강화된 검`;
+        }
+
+        // 화면 업데이트 함수
+        function updateUI() {
+            elGold.innerText = gold.toLocaleString();
+            elSwordName.innerText = getSwordName(level);
+            elSwordImage.innerText = getSwordVisual(level);
+
+            if (level >= MAX_LEVEL) {
+                elSwordDesc.innerText = "더 이상 강화할 수 없는 완벽한 검입니다.";
+                elBtnEnhance.innerText = "강화 마스터";
+                elBtnEnhance.disabled = true;
+            } else {
+                const cost = getEnhanceCost(level);
+                const rate = getSuccessRate(level);
+                elSwordDesc.innerText = `성공 확률: ${rate}% \n실패 시 1단계 하락합니다.`;
+                elBtnEnhance.innerText = `강화하기 (${cost.toLocaleString()} G)`;
+                elBtnEnhance.disabled = gold < cost; // 골드가 부족하면 버튼 비활성화
+            }
+        }
+
+        // 로그 메시지 출력
+        function showLog(msg, isFail = false) {
+            elLog.innerText = msg;
+            if (isFail) {
+                elLog.classList.add('log-fail');
+            } else {
+                elLog.classList.remove('log-fail');
+            }
+        }
+
+        // 강화 버튼 클릭 이벤트
+        elBtnEnhance.addEventListener('click', () => {
+            if (level >= MAX_LEVEL) return;
+
+            const cost = getEnhanceCost(level);
+            if (gold < cost) {
+                showLog("골드가 부족합니다!", true);
+                return;
+            }
+
+            // 골드 차감
+            gold -= cost;
+
+            // 확률 계산 (1 ~ 100 사이의 난수 생성)
+            const rate = getSuccessRate(level);
+            const randomValue = Math.floor(Math.random() * 100) + 1;
+
+            if (randomValue <= rate) {
+                // 강화 성공
+                level++;
+                showLog(`성공! +${level} 강화되었습니다.`);
+            } else {
+                // 강화 실패 (패널티: 1단계 하락, 0밑으로는 안 떨어짐)
+                if (level > 0) {
+                    level--;
+                    showLog(`실패... +${level} (으)로 하락했습니다.`, true);
+                } else {
+                    showLog(`실패... 더 이상 떨어질 곳이 없습니다.`, true);
+                }
+            }
+
+            updateUI();
+        });
+
+        // 돈 벌기 버튼 클릭 이벤트 (테스트용)
+        elBtnWork.addEventListener('click', () => {
+            gold += 500;
+            showLog("광산에서 500 G를 벌었습니다.");
+            updateUI();
+        });
+
+        // 초기 화면 세팅
+        updateUI();
+    </script>
+</body>
+</html>
